@@ -49,7 +49,16 @@ public class MainActivity extends AppCompatActivity {
     private byte[] readBuffer; //수신된 문자열 저장 버퍼
     private int readBufferPosition; //버퍼  내 문자 저장 위치
     String[] array = {"0"}; //수신된 문자열을 쪼개서 저장할 배열
+    String[][] included = {{"묶음세트", "한 번의 클릭으로 8종 예제를 봐보세요!", "", "a"}, {"비내리는 밤", "추적추적 하늘에서 맑은 비가 내리네", "", "r"}, {"다이내믹 월", "어이, 형씨! 와서 벽이나 닦아!", "", "w"}, {"탱탱볼", "사과 톡 톡 톡", "", "b"}, {"3차원 좌표계", }};
     int[][] a = {{0, 0, 0, 0, 1, 1, 0, 0}, {0, 1, 0, 0, 1, 0, 1, 0}, {0, 0, 1, 0, 1, 0, 1, 0}, {0, 0, 0, 1, 1, 1, 0, 0}, {0, 0, 0, 1, 1, 1, 0, 0}, {0, 0, 1, 0, 1, 0, 1, 0}, {0, 1, 0, 0, 1, 0, 1, 0}, {0, 0, 0, 0, 1, 1, 0, 0}};
+
+
+    GridLayout gridLayout;
+    ConstraintLayout mainLayout;
+    ConstraintLayout wrapLayout;
+    ConstraintLayout slideLayout;
+    TextView RGBtext;
+    ImageView arrow;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,18 +72,19 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        GridLayout gridLayout = findViewById(R.id.gridLayout);
-        ConstraintLayout mainLayout = findViewById(R.id.main);
-        ConstraintLayout wrapLayout = findViewById(R.id.wrapLayout);
-        ConstraintLayout slideLayout = findViewById(R.id.slide_layout);
-        TextView RGBtext = findViewById(R.id.rgbtext);
-        ImageView arrow = findViewById(R.id.arrow);
+
+        gridLayout = findViewById(R.id.gridLayout);
+        mainLayout = findViewById(R.id.main);
+        wrapLayout = findViewById(R.id.wrapLayout);
+        slideLayout = findViewById(R.id.slide_layout);
+        RGBtext = findViewById(R.id.rgbtext);
+        arrow = findViewById(R.id.arrow);
 
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 ImageView imageView = new ImageView(this);
                 imageView.setImageResource(R.drawable.circle);
-                if (a[i][j]==1) imageView.setImageResource(R.drawable.circle_gray);
+                if (a[i][j] == 1) imageView.setImageResource(R.drawable.circle_gray);
                 gridLayout.addView(imageView);
             }
         }
@@ -92,56 +102,34 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1028);
         }
 
-            wrapLayout.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
+        wrapLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
 
-                    if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                        ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1028);
-                    }
-                    if (bluetoothAdapter == null) { //기기가 블루투스를 지원하지 않을때
-                        Toast.makeText(getApplicationContext(), "Bluetooth 미지원 기기입니다.", Toast.LENGTH_SHORT).show();
-                        //처리코드 작성
-                    } else { // 기기가 블루투스를 지원할 때
-                        if (bluetoothAdapter.isEnabled()) { // 기기의 블루투스 기능이 켜져있을 경우
-                            selectBluetoothDevice(); // 블루투스 디바이스 선택 함수 호출
-                            //if (bluetoothDevice != null && bluetoothSocket != null) {
-
-                            gridLayout.removeAllViews();
-                            slideLayout.removeAllViews();
-
-                            for (int i = 0; i < 8; i++) {
-                                for (int j = 0; j < 8; j++) {
-                                    ImageView imageView = new ImageView(context);
-                                    imageView.setImageResource(R.drawable.circle_dark);
-                                    if (a[i][j]==1) imageView.setImageResource(R.drawable.circle_blue);
-                                    gridLayout.addView(imageView);
-                                }
-                            }
-                            arrow.setVisibility(View.VISIBLE);
-                            RGBtext.setText("RGB 큐브 연결됨");
-                            mainLayout.setBackgroundColor(Color.rgb(0x17, 0x17, 0x1B));
-
-                            Animation ani;
-                            ani = AnimationUtils.loadAnimation(context, R.anim.animation);
-                            arrow.startAnimation(ani);
-                            slideLayout.setVisibility(View.VISIBLE);
-                            slideLayout.setBackgroundColor(Color.rgb(0x17, 0x17, 0x1B));
-                            //}
-                        } else { // 기기의 블루투스 기능이 꺼져있을 경우
-                            // 블루투스를 활성화 하기 위한 대화상자 출력
-                            Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                            // 선택 값이 onActivityResult함수에서 콜백
-                                startActivityForResult(intent, REQUEST_ENABLE_BT);
-                            selectBluetoothDevice();
-                        }
-
-                    }
+                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1028);
                 }
-            });
+                if (bluetoothAdapter == null) { //기기가 블루투스를 지원하지 않을때
+                    Toast.makeText(getApplicationContext(), "Bluetooth 미지원 기기입니다.", Toast.LENGTH_SHORT).show();
+                    //처리코드 작성
+                } else { // 기기가 블루투스를 지원할 때
+                    if (bluetoothAdapter.isEnabled()) { // 기기의 블루투스 기능이 켜져있을 경우
+                        selectBluetoothDevice(); // 블루투스 디바이스 선택 함수 호출
+                    } else { // 기기의 블루투스 기능이 꺼져있을 경우
+                        // 블루투스를 활성화 하기 위한 대화상자 출력
+                        Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                        // 선택 값이 onActivityResult함수에서 콜백
+                        startActivityForResult(intent, REQUEST_ENABLE_BT);
+                        selectBluetoothDevice();
+                    }
+
+                }
+            }
+        });
     }
 
     int pairedDeviceCount; //페어링 된 기기의 크기를 저장할 변수
+
     public void selectBluetoothDevice() {
         //이미 페어링 되어있는 블루투스 기기를 탐색
 
@@ -179,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
             builder.setItems(charSequences, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    if(charSequences[which].equals("취소")) return;
+                    if (charSequences[which].equals("취소")) return;
                     //해당 디바이스와 연결하는 함수 호출
                     connectDevice(charSequences[which].toString());
                 }
@@ -213,22 +201,70 @@ public class MainActivity extends AppCompatActivity {
             }
 
         }
-        Toast.makeText(getApplicationContext(), bluetoothDevice.getName() + " 연결 완료!", Toast.LENGTH_SHORT).show();
         //UUID생성
         UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
         //Rfcomm 채널을 통해 블루투스 디바이스와 통신하는 소켓 생성
 
         try {
             bluetoothSocket = bluetoothDevice.createRfcommSocketToServiceRecord(uuid);
-            bluetoothSocket.connect();
+            Thread thread = new TempThread();
+            thread.run();
 
-            outputStream = bluetoothSocket.getOutputStream();
-            inputStream = bluetoothSocket.getInputStream();
-            receiveData();
+            Thread.sleep(2000);
+            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            }
+            if (bluetoothSocket.isConnected()) {
+                Toast.makeText(getApplicationContext(), bluetoothDevice.getName() + " 연결 완료!", Toast.LENGTH_SHORT).show();
+
+                gridLayout.removeAllViews();
+                slideLayout.removeAllViews();
+
+                for (int i = 0; i < 8; i++) {
+                    for (int j = 0; j < 8; j++) {
+                        ImageView imageView = new ImageView(getApplicationContext());
+                        imageView.setImageResource(R.drawable.circle_dark);
+                        if (a[i][j] == 1)
+                            imageView.setImageResource(R.drawable.circle_blue);
+                        gridLayout.addView(imageView);
+                    }
+                }
+                arrow.setVisibility(View.VISIBLE);
+                RGBtext.setText("RGB 큐브 연결됨");
+                mainLayout.setBackgroundColor(Color.rgb(0x17, 0x17, 0x1B));
+
+                Animation ani;
+                ani = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.animation);
+                arrow.startAnimation(ani);
+                slideLayout.setVisibility(View.VISIBLE);
+                slideLayout.setBackgroundColor(Color.rgb(0x17, 0x17, 0x1B));
+            }
+            else {
+                Toast.makeText(getApplicationContext(),"연결 실패..", Toast.LENGTH_SHORT).show();
+            }
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
+
+    class TempThread extends Thread {
+        @Override
+        public void run() {
+            super.run();
+            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            }
+            try {
+                bluetoothSocket.connect();
+                outputStream = bluetoothSocket.getOutputStream();
+                inputStream = bluetoothSocket.getInputStream();
+                receiveData();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 
     public void receiveData() {
         final Handler handler = new Handler();

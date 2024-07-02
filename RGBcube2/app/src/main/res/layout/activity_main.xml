@@ -73,6 +73,7 @@
         android:layout_height="match_parent">
 
         <TextView
+            android:id="@+id/willberemoved"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="먼저 RGB 큐브를 연결해주세요"
@@ -81,6 +82,25 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"/>
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/scroll"
+            android:visibility="gone"
+            >
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="RGB 큐브 샘플"
+                    android:textSize="50dp"
+                    android:textColor="#909090"
+                    android:gravity="center"
+                    android:layout_marginTop="150dp"/>
+            </LinearLayout>
+        </ScrollView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.sothree.slidinguppanel.SlidingUpPanelLayout>
