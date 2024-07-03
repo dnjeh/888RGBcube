@@ -1,6 +1,7 @@
 package com.example.rgbcube2;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -15,8 +16,10 @@ import android.os.Handler;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,16 +52,20 @@ public class MainActivity extends AppCompatActivity {
     private byte[] readBuffer; //수신된 문자열 저장 버퍼
     private int readBufferPosition; //버퍼  내 문자 저장 위치
     String[] array = {"0"}; //수신된 문자열을 쪼개서 저장할 배열
-    String[][] included = {{"묶음세트", "한 번의 클릭으로 8종 예제를 봐보세요!", "", "a"}, {"비내리는 밤", "추적추적 하늘에서 맑은 비가 내리네", "", "r"}, {"다이내믹 월", "어이, 형씨! 와서 벽이나 닦아!", "", "w"}, {"탱탱볼", "사과 톡 톡 톡", "", "b"}, {"3차원 좌표계", }};
+    String[][] included = {{"all", "a"}, {"rain", "r"}, {"folder", "f"}, {"sinwave", "s"}, {"bouncy", "b"}, {"wheel", "w"}, {"harlem shake", "h"}, {"all leds", "l"}};
     int[][] a = {{0, 0, 0, 0, 1, 1, 0, 0}, {0, 1, 0, 0, 1, 0, 1, 0}, {0, 0, 1, 0, 1, 0, 1, 0}, {0, 0, 0, 1, 1, 1, 0, 0}, {0, 0, 0, 1, 1, 1, 0, 0}, {0, 0, 1, 0, 1, 0, 1, 0}, {0, 1, 0, 0, 1, 0, 1, 0}, {0, 0, 0, 0, 1, 1, 0, 0}};
 
 
     GridLayout gridLayout;
+    GridLayout gridButtonLayout;
     ConstraintLayout mainLayout;
     ConstraintLayout wrapLayout;
     ConstraintLayout slideLayout;
+
     TextView RGBtext;
     ImageView arrow;
+    ScrollView scroll;
+    TextView will;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,12 +81,14 @@ public class MainActivity extends AppCompatActivity {
 
 
         gridLayout = findViewById(R.id.gridLayout);
+        gridButtonLayout = findViewById(R.id.gridButtonLayout);
         mainLayout = findViewById(R.id.main);
         wrapLayout = findViewById(R.id.wrapLayout);
         slideLayout = findViewById(R.id.slide_layout);
         RGBtext = findViewById(R.id.rgbtext);
         arrow = findViewById(R.id.arrow);
-
+        scroll = findViewById(R.id.scroll);
+        will = findViewById(R.id.willberemoved);
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 ImageView imageView = new ImageView(this);
@@ -217,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), bluetoothDevice.getName() + " 연결 완료!", Toast.LENGTH_SHORT).show();
 
                 gridLayout.removeAllViews();
-                slideLayout.removeAllViews();
+                will.setVisibility(View.GONE);
 
                 for (int i = 0; i < 8; i++) {
                     for (int j = 0; j < 8; j++) {
@@ -237,6 +246,25 @@ public class MainActivity extends AppCompatActivity {
                 arrow.startAnimation(ani);
                 slideLayout.setVisibility(View.VISIBLE);
                 slideLayout.setBackgroundColor(Color.rgb(0x17, 0x17, 0x1B));
+                scroll.setVisibility(View.VISIBLE);
+                for(int i=0;i<included.length;i++) {
+                    Button temp = new Button(getApplicationContext());
+                    temp.setText(included[i][0]);
+                    temp.setBackgroundColor(Color.rgb(0x90, 0x90, 0x90));
+                    int finalI = i;
+                    temp.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            int ii = finalI;
+                            try {
+                                outputStream.write(included[ii][1].getBytes());
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    });
+                    gridButtonLayout.addView(temp);
+                }
             }
             else {
                 Toast.makeText(getApplicationContext(),"연결 실패..", Toast.LENGTH_SHORT).show();
@@ -249,6 +277,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     class TempThread extends Thread {
+        @SuppressLint("MissingPermission")
         @Override
         public void run() {
             super.run();
