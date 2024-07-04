@@ -54,6 +54,7 @@ void setup() {
 
 
 void loop() {
+  clean();
   if (btSerial.available() > 0) {
     char t = btSerial.read();
     clean();
