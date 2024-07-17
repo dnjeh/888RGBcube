@@ -1,13 +1,11 @@
 
 #include <SPI.h>
-#include <SoftwareSerial.h> 
 
 #define latch_pin 2
 #define blank_pin 4
-#define data_pin 11
-#define clock_pin 13
+#define data_pin 51
+#define clock_pin 52
 int shift_out;
-SoftwareSerial btSerial = SoftwareSerial(8, 9);
 byte anode[8];
 byte red0[64], red1[64], red2[64], red3[64];
 byte blue0[64], blue1[64], blue2[64], blue3[64];
@@ -22,7 +20,6 @@ void setup() {
   SPI.setDataMode(SPI_MODE0);
   SPI.setClockDivider(SPI_CLOCK_DIV2);
 
-  btSerial.begin(9600);
 
   noInterrupts();
   TCCR1A = B00000000;
@@ -48,6 +45,7 @@ void setup() {
   pinMode(blank_pin, OUTPUT);
   SPI.begin();
   Serial.begin(9600);
+  Serial1.begin(9600);
   interrupts();
 
 }
@@ -55,19 +53,20 @@ void setup() {
 
 void loop() {
   clean();
-  if (btSerial.available() > 0) {
-    char t = btSerial.read();
+  if (Serial1.available() > 0) {
+    char t = Serial1.read();
     clean();
     if(t=='a') {
       rainVersionTwo();
       folder();
       sinwaveTwo();
-      //wipe_out();
+      wipe_out();
       clean();
       bouncyvTwo();
       color_wheelTWO();
       clean();
       harlem_shake();
+      moveSingle();
       allLeds(); 
     }
     else if(t=='r') {
@@ -79,15 +78,20 @@ void loop() {
     else if(t=='s') {
     sinwaveTwo();
     }
-    //wipe_out();
+    else if(t=='o') {
+      wipe_out();
+    }
     else if(t=='b') {
     bouncyvTwo();
     }
     else if(t=='w') {
-color_wheelTWO();
+    color_wheelTWO();
     }
     else if(t=='h') {
     harlem_shake(); 
+    }
+    else if(t=='i') {
+      moveSingle();
     }
     else if(t=='l') {
     allLeds();
@@ -100,7 +104,7 @@ void moveSingle() {
   for (int i = 0; i < 8; i++)
     for (int j = 0; j < 8; j++)
       for (int k = 0; k < 8; k++) {
-        LED(i, j, k, 0, 10, 0);
+        LED(i, j, k, 3, 3, 3);
 
 
         delay(6);
@@ -208,7 +212,7 @@ void LED(int level, int row, int column, byte red, byte green, byte blue) {
 }
 
 ISR(TIMER1_COMPA_vect) {
-  PORTD |= 1 << blank_pin;
+  PORTG |= 1 << 5;
   if (BAM_Counter == 8)
     BAM_Bit++;
   else if (BAM_Counter == 24)
@@ -261,9 +265,10 @@ ISR(TIMER1_COMPA_vect) {
 
   SPI.transfer(anode[anodelevel]);
 
-  PORTD |= 1 << latch_pin;
-  PORTD &= ~(1 << latch_pin);
-  PORTD &= ~(1 << blank_pin);
+  PORTE |= 1 << 4;
+  PORTE &= ~(1 << 4);
+  
+  PORTG &= ~(1 << 5);
 
   anodelevel++;
   level = level + 8;
