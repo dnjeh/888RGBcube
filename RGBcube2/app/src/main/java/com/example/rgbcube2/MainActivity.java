@@ -11,6 +11,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -52,9 +53,17 @@ public class MainActivity extends AppCompatActivity {
     private byte[] readBuffer; //수신된 문자열 저장 버퍼
     private int readBufferPosition; //버퍼  내 문자 저장 위치
     String[] array = {"0"}; //수신된 문자열을 쪼개서 저장할 배열
-    String[][] included = {{"all", "a"}, {"rain", "r"}, {"folder", "f"}, {"sinwave", "s"}, {"bouncy", "b"}, {"wheel", "w"}, {"harlem shake", "h"}, {"all leds", "l"}};
+    String[][] included = {{"all", "a", Integer.toString(R.drawable.all)},
+            {"rain", "r", Integer.toString(R.drawable.rain)},
+            {"folder", "f", Integer.toString(R.drawable.folder)},
+            {"sinwave", "s", Integer.toString(R.drawable.sinwave)},
+            {"wipe out", "o", Integer.toString(R.drawable.wipe2)},
+            {"bouncy", "b", Integer.toString(R.drawable.bouncy)},
+            {"wheel", "w", Integer.toString(R.drawable.wheel)},
+            {"rgb rainbow", "h", Integer.toString(R.drawable.harlem)},
+            {"fill", "i", Integer.toString(R.drawable.fill)},
+            {"all leds", "l", Integer.toString(R.drawable.allled)} };
     int[][] a = {{0, 0, 0, 0, 1, 1, 0, 0}, {0, 1, 0, 0, 1, 0, 1, 0}, {0, 0, 1, 0, 1, 0, 1, 0}, {0, 0, 0, 1, 1, 1, 0, 0}, {0, 0, 0, 1, 1, 1, 0, 0}, {0, 0, 1, 0, 1, 0, 1, 0}, {0, 1, 0, 0, 1, 0, 1, 0}, {0, 0, 0, 0, 1, 1, 0, 0}};
-
 
     GridLayout gridLayout;
     GridLayout gridButtonLayout;
@@ -78,7 +87,6 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
 
         gridLayout = findViewById(R.id.gridLayout);
         gridButtonLayout = findViewById(R.id.gridButtonLayout);
@@ -222,7 +230,7 @@ public class MainActivity extends AppCompatActivity {
             Thread.sleep(2000);
             if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
             }
-            if (bluetoothSocket.isConnected()) {
+            //if (bluetoothSocket.isConnected()) {
                 Toast.makeText(getApplicationContext(), bluetoothDevice.getName() + " 연결 완료!", Toast.LENGTH_SHORT).show();
 
                 gridLayout.removeAllViews();
@@ -238,7 +246,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 arrow.setVisibility(View.VISIBLE);
-                RGBtext.setText("RGB 큐브 연결됨");
+                RGBtext.setText("광자 방출 2극 정류관 입방체 연결됨");
                 mainLayout.setBackgroundColor(Color.rgb(0x17, 0x17, 0x1B));
 
                 Animation ani;
@@ -249,8 +257,18 @@ public class MainActivity extends AppCompatActivity {
                 scroll.setVisibility(View.VISIBLE);
                 for(int i=0;i<included.length;i++) {
                     Button temp = new Button(getApplicationContext());
+                    Drawable drawable = getDrawable(Integer.parseInt(included[i][2]));
+                    Drawable drawable1 = getDrawable(R.drawable.rounded);
+                    drawable.setBounds(0, 0, 300, 300);
+                    GridLayout.LayoutParams params =new GridLayout.LayoutParams();
                     temp.setText(included[i][0]);
-                    temp.setBackgroundColor(Color.rgb(0x90, 0x90, 0x90));
+                    temp.setBackground(drawable1);
+                    temp.setCompoundDrawablesRelative(null, drawable, null, null);
+                    temp.setCompoundDrawablePadding(10);
+                    temp.setTextSize(20);
+                    temp.setTextColor(Color.WHITE);
+                    params.rowSpec = GridLayout.spec(i/2, 1); // 0번째 행, 1행 차지
+                    params.columnSpec = GridLayout.spec(i%2, 1, 1f);
                     int finalI = i;
                     temp.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -263,12 +281,12 @@ public class MainActivity extends AppCompatActivity {
                             }
                         }
                     });
-                    gridButtonLayout.addView(temp);
+                    gridButtonLayout.addView(temp, params);
                 }
-            }
-            else {
+            //}
+            //else {
                 Toast.makeText(getApplicationContext(),"연결 실패..", Toast.LENGTH_SHORT).show();
-            }
+            //}
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
