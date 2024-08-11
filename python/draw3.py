@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from tkinter import Tk, Scale, HORIZONTAL, VERTICAL, Frame, Button, Entry, Canvas, LEFT, RIGHT, Scrollbar, Y, Label
+from tkinter import filedialog  # 파일 대화 상자 추가
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # 8x8x8 크기의 3차원 배열 생성
@@ -48,9 +49,23 @@ def update_plot():
                 if np.any(color):  # 색상이 설정된 점만 추가
                     ax.scatter(x, y, z, c=[color], s=100, marker='o')  # 색상 업데이트
 
+    # 현재 Z 층에 가상의 X, Y 선 추가 (격자 무늬)
+    draw_grid_lines()
+
     canvas.draw()
 
-# RGB 및 Z 슬라이더 업데이트 함수
+def draw_grid_lines():
+    z = z_value
+    step = 1  # 격자의 간격
+
+    # X 방향 선
+    for y in range(0, 8, step):
+        ax.plot([0, 7], [y, y], zs=z, color='black', linestyle='--', linewidth=2)
+
+    # Y 방향 선
+    for x in range(0, 8, step):
+        ax.plot([x, x], [0, 7], zs=z, color='black', linestyle='--', linewidth=2)
+
 def update_r(val):
     global r_value
     r_value = int(val)
@@ -69,6 +84,7 @@ def update_b(val):
 def update_z(val):
     global z_value
     z_value = int(val)
+    update_plot()  # Z 값 변경 시 플롯 업데이트
 
 def update_color_display():
     # 현재 색상 업데이트
@@ -101,13 +117,17 @@ def format_array(arr):
     return format_array(arr)
 
 def export_to_arduino():
-    R = rgb_cube[:, :, :, 0]
-    G = rgb_cube[:, :, :, 1]
-    B = rgb_cube[:, :, :, 2]
-    
-    print("R[8][8][8] =", format_array(R))
-    print("G[8][8][8] =", format_array(G))
-    print("B[8][8][8] =", format_array(B))
+    # 파일 저장 대화 상자 열기
+    file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt")])
+    if file_path:
+        with open(file_path, 'w') as file:
+            R = rgb_cube[:, :, :, 0]
+            G = rgb_cube[:, :, :, 1]
+            B = rgb_cube[:, :, :, 2]
+            
+            file.write("R[8][8][8] = " + format_array(R) + "\n")
+            file.write("G[8][8][8] = " + format_array(G) + "\n")
+            file.write("B[8][8][8] = " + format_array(B) + "\n")
 
 def quit_application():
     root.destroy()
@@ -221,13 +241,11 @@ slider_frame = Frame(slider_color_frame, bg='#ffffff')
 slider_frame.pack(side='left', padx=10, pady=5)
 
 # 색상 표시
-
 color_frame = Frame(slider_frame, bg="#ffffff")
 color_frame.pack(side="top")
 
 color_display = Canvas(color_frame, width=30, height=30, bg='#000000', relief='solid')
 color_display.pack(side='left', padx=10, pady=10)
-
 
 # HEX 코드 입력 및 팔레트
 import_frame = Frame(color_frame, bg='#ffffff')
@@ -248,7 +266,6 @@ g_slider.pack(side='top', padx=5)
 
 b_slider = Scale(slider_frame, from_=0, to=15, orient=HORIZONTAL, label='Blue', command=update_b, length=200)
 b_slider.pack(side='top', padx=5)
-
 
 # 팔레트 설정
 palette_frame = Frame(slider_color_frame, bg='#ffffff')
