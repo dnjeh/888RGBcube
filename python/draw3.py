@@ -32,6 +32,22 @@ def on_canvas_click(event):
         if color_code not in palette_dict:
             add_to_palette(color_code)
 
+def on_canvas_right_click(event):
+    x = int(event.x // (canvas_width // 8))
+    y = 7 - int(event.y // (canvas_height // 8))
+    z = z_value
+    if 0 <= x < 8 and 0 <= y < 8 and 0 <= z < 8:
+        color = rgb_cube[x, y, z]
+        if np.any(color):  # 색상이 설정된 점만 업데이트
+            color_code = f'#{color[0]*16:02X}{color[1]*16:02X}{color[2]*16:02X}'
+            r_slider.set(color[0])
+            g_slider.set(color[1])
+            b_slider.set(color[2])
+            update_color_display()
+
+            if color_code not in palette_dict:
+                add_to_palette(color_code)
+
 def update_plot():
     ax.cla()  # Clear the 3D plot
     ax.set_xlim(0, 7)
@@ -53,6 +69,7 @@ def update_plot():
     draw_grid_lines()
 
     canvas.draw()
+    draw_grid()
 
 def draw_grid_lines():
     z = z_value
@@ -85,6 +102,7 @@ def update_z(val):
     global z_value
     z_value = int(val)
     update_plot()  # Z 값 변경 시 플롯 업데이트
+    draw_grid()
 
 def update_color_display():
     # 현재 색상 업데이트
@@ -95,6 +113,7 @@ def clear_all():
     global rgb_cube
     rgb_cube = np.zeros((8, 8, 8, 3), dtype=int)
     update_plot()  # 플롯 업데이트
+    draw_grid()
 
 def format_array(arr):
     def format_layer(layer):
@@ -213,11 +232,14 @@ def set_color_from_palette(color_code):
 
 def draw_grid():
     grid_canvas.delete("all")
-    cell_width = canvas_width // 8
-    cell_height = canvas_height // 8
-    for i in range(9):
-        grid_canvas.create_line(i * cell_width, 0, i * cell_width, canvas_height, fill='black')
-        grid_canvas.create_line(0, i * cell_height, canvas_width, i * cell_height, fill='black')
+    step_x = canvas_width // 8
+    step_y = canvas_height // 8
+
+    for i in range(8):
+        for j in range(8):
+            color = rgb_cube[i, 7 - j, z_value]
+            color_code = f'#{color[0]*16:02X}{color[1]*16:02X}{color[2]*16:02X}'
+            grid_canvas.create_rectangle(i * step_x, j * step_y, (i + 1) * step_x, (j + 1) * step_y, fill=color_code, outline="gray", tags="grid")
 
 def update_palette_scrollregion(event):
     # 팔레트의 스크롤 영역을 캔버스의 바운스로 설정
@@ -269,6 +291,7 @@ z_slider.pack(side='right', padx=5)
 
 draw_grid()
 grid_canvas_id = grid_canvas.bind("<Button-1>", on_canvas_click)
+grid_canvas_id = grid_canvas.bind("<Button-3>", on_canvas_right_click)
 
 # 슬라이더 및 색상 표시 프레임
 slider_color_frame = Frame(right_frame, bg='#ffffff', relief='sunken', borderwidth=2)
@@ -283,11 +306,11 @@ color_frame = Frame(slider_frame, bg="#ffffff")
 color_frame.pack(side="top")
 
 color_display = Canvas(color_frame, width=30, height=30, bg='#000000', relief='solid')
-color_display.pack(side='left', padx=10, pady=10)
+color_display.pack(side='left', pady=10)
 
 # HEX 코드 입력 및 팔레트
 import_frame = Frame(color_frame, bg='#ffffff')
-import_frame.pack(side="left", padx=10, pady=10)
+import_frame.pack(side="left", pady=10)
 
 import_label = Label(import_frame, text="Import HEX code:", bg='#ffffff')
 import_label.pack(side='left')
@@ -306,11 +329,11 @@ b_slider = Scale(slider_frame, from_=0, to=15, orient=HORIZONTAL, label='Blue', 
 b_slider.pack(side='top', padx=5)
 
 # 팔레트 설정
-palette_frame = Frame(slider_color_frame, bg='#ffffff')
+palette_frame = Frame(slider_color_frame, bg='#ffffff', )
 palette_frame.pack(side='bottom', fill='both', pady=5)
 
 # 팔레트 캔버스 및 스크롤바 설정
-palette_canvas = Canvas(palette_frame, bg='white')
+palette_canvas = Canvas(palette_frame, bg='white', width=150, height=120)
 palette_scrollbar = Scrollbar(palette_frame, orient='vertical', command=palette_canvas.yview)
 palette_canvas.configure(yscrollcommand=palette_scrollbar.set)
 
@@ -324,7 +347,7 @@ palette_canvas.create_window((0, 0), window=palette_inner_frame, anchor='nw')
 palette_inner_frame.bind("<Configure>", update_palette_scrollregion)
 
 # 팔레트 색상 박스의 열 수 설정
-num_columns = 10
+num_columns = 6
 
 # 색상 딕셔너리 초기화
 palette_dict = {}
