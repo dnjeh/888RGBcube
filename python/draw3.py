@@ -45,9 +45,9 @@ def update_plot():
     for x in range(8):
         for y in range(8):
             for z in range(8):
-                color = rgb_cube[x, y, z] / 15  # 색상은 정규화된 RGB 값으로 설정
+                color = rgb_cube[x, y, z]  # 색상은 정규화된 RGB 값으로 설정
                 if np.any(color):  # 색상이 설정된 점만 추가
-                    ax.scatter(x, y, z, c=[color], s=100, marker='o')  # 색상 업데이트
+                    ax.plot(x, y, z, c=f'#{color[0]*16:02X}{color[1]*16:02X}{color[2]*16:02X}', markersize=10, marker='o')  # 색상 업데이트
 
     # 현재 Z 층에 가상의 X, Y 선 추가 (격자 무늬)
     draw_grid_lines()
@@ -125,9 +125,47 @@ def export_to_arduino():
             G = rgb_cube[:, :, :, 1]
             B = rgb_cube[:, :, :, 2]
             
-            file.write("R[8][8][8] = " + format_array(R) + "\n")
-            file.write("G[8][8][8] = " + format_array(G) + "\n")
-            file.write("B[8][8][8] = " + format_array(B) + "\n")
+            file.write("R[8][8][8] = " + format_array(R) + ';' + "\n")
+            file.write("G[8][8][8] = " + format_array(G) + ';' + "\n")
+            file.write("B[8][8][8] = " + format_array(B) + ';' + "\n")
+
+def import_from_arduino():
+    # 파일 열기 대화 상자
+    file_path = filedialog.askopenfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt")])
+    if file_path:
+        with open(file_path, 'r') as file:
+            content = file.read()
+            global rgb_cube
+
+            # R, G, B 배열 추출
+            R_start = content.find("R[8][8][8] = ") + len("R[8][8][8] = ") 
+            G_start = content.find("G[8][8][8] = ") + len("G[8][8][8] = ") 
+            B_start = content.find("B[8][8][8] = ") + len("B[8][8][8] = ") 
+
+            R_end = content.find(";", R_start)
+            G_end = content.find(";", G_start)
+            B_end = content.find(";", B_start)
+
+            R_data = content[R_start:R_end].strip()
+            G_data = content[G_start:G_end].strip()
+            B_data = content[B_start:B_end].strip()
+
+            def parse_data(data):
+                # 중괄호를 대괄호로 바꾸고 데이터를 파싱합니다.
+                data = data.replace('{', '[').replace('}', ']')
+                # 배열 형태의 문자열을 eval로 평가하여 리스트로 변환합니다.
+                return eval(data)
+
+            R = parse_data(R_data)
+            G = parse_data(G_data)
+            B = parse_data(B_data)
+
+            # rgb_cube 배열 업데이트
+            rgb_cube[:, :, :, 0] = np.array(R)
+            rgb_cube[:, :, :, 1] = np.array(G)
+            rgb_cube[:, :, :, 2] = np.array(B)
+
+            update_plot()  # 플롯 업데이트
 
 def quit_application():
     root.destroy()
@@ -295,13 +333,22 @@ palette_dict = {}
 button_frame = Frame(slider_color_frame, bg='#ffffff')
 button_frame.pack(side='bottom', fill='x', pady=5)
 
-clear_button = Button(button_frame, text="Clear", command=clear_all, width=12)
-clear_button.pack(side='left', padx=5)
+button_top_frame = Frame(button_frame, bg='#ffffff')
+button_top_frame.pack(side='top', fill='x', pady=5)
 
-export_button = Button(button_frame, text="Export to Arduino", command=export_to_arduino, width=18)
+button_bottom_frame = Frame(button_frame, bg='#ffffff')
+button_bottom_frame.pack(side='bottom', fill='x', pady=5)
+
+export_button = Button(button_top_frame, text="Export to Arduino", command=export_to_arduino, width=18)
 export_button.pack(side='left', padx=5)
 
-quit_button = Button(button_frame, text="Quit", command=quit_application, width=12)
+clear_button = Button(button_top_frame, text="Clear", command=clear_all, width=12)
+clear_button.pack(side='left', padx=5)
+
+import_button = Button(button_bottom_frame, text="Import from Arduino", command=import_from_arduino, width=18)
+import_button.pack(side='left', padx=5)
+
+quit_button = Button(button_bottom_frame, text="Quit", command=quit_application, width=12)
 quit_button.pack(side='left', padx=5)
 
 # Tkinter 메인 루프 시작
