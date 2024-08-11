@@ -230,7 +230,7 @@ public class MainActivity extends AppCompatActivity {
             Thread.sleep(2000);
             if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
             }
-            //if (bluetoothSocket.isConnected()) {
+            if (bluetoothSocket.isConnected()) {
                 Toast.makeText(getApplicationContext(), bluetoothDevice.getName() + " 연결 완료!", Toast.LENGTH_SHORT).show();
 
                 gridLayout.removeAllViews();
@@ -283,10 +283,11 @@ public class MainActivity extends AppCompatActivity {
                     });
                     gridButtonLayout.addView(temp, params);
                 }
-            //}
-            //else {
-                Toast.makeText(getApplicationContext(),"연결 실패..", Toast.LENGTH_SHORT).show();
-            //}
+            }
+            else {
+                Toast.makeText(getApplicationContext(),"연결 실패..", Toast.
+                        LENGTH_SHORT).show();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
