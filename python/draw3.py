@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from tkinter import Tk, Scale, HORIZONTAL, Label, Canvas, Frame, Button, Entry
+from tkinter import Tk, Scale, HORIZONTAL, VERTICAL, Frame, Button, Entry, Canvas, LEFT, RIGHT
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # 8x8x8 크기의 3차원 배열 생성
@@ -28,8 +28,12 @@ def on_canvas_click(event):
             color = (r_value / 15, g_value / 15, b_value / 15)
             ax.scatter(x, y, z, c=[color], s=100)  # 색상은 정규화된 RGB 값으로 설정
             canvas.draw()
-            # Update grid canvas
-            draw_grid()
+            draw_grid()  # Update grid canvas
+
+            # 팔레트에 색상 추가
+            color_code = f'#{r_value*16:02X}{g_value*16:02X}{b_value*16:02X}'
+            if color_code not in palette_dict:
+                add_to_palette(color_code)
 
 # RGB 및 Z 슬라이더 업데이트 함수
 def update_r(val):
@@ -59,21 +63,10 @@ def clear_all():
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
     draw_grid()  # Redraw the grid
-    draw_lines()  # Draw grid lines
     canvas.draw()
 
 def format_array(arr):
-    """
-    포맷된 배열을 Arduino에서 읽을 수 있는 문자열 형식으로 변환합니다.
-    :param arr: 3D numpy 배열
-    :return: 포맷된 문자열
-    """
     def format_layer(layer):
-        """
-        배열의 2D 레이어를 문자열로 포맷합니다.
-        :param layer: 2D numpy 배열
-        :return: 포맷된 문자열
-        """
         return '{{{}}}'.format(
             ', '.join(
                 '{{{}}}'.format(
@@ -83,11 +76,6 @@ def format_array(arr):
         )
 
     def format_array(arr):
-        """
-        배열의 3D 차원을 문자열로 포맷합니다.
-        :param arr: 3D numpy 배열
-        :return: 포맷된 문자열
-        """
         return '{{{}}}'.format(
             ', '.join(
                 format_layer(layer)
@@ -98,7 +86,6 @@ def format_array(arr):
     return format_array(arr)
 
 def export_to_arduino():
-    # Export the rgb_cube array to a format suitable for Arduino
     R = rgb_cube[:, :, :, 0]
     G = rgb_cube[:, :, :, 1]
     B = rgb_cube[:, :, :, 2]
@@ -111,11 +98,6 @@ def quit_application():
     root.destroy()
 
 def hex_to_rgb(hex_str):
-    """
-    Convert a hex color string to an RGB tuple.
-    :param hex_str: Color code in hex format (e.g., #FFFFFF)
-    :return: Tuple with RGB values
-    """
     hex_str = hex_str.lstrip('#')
     return tuple(int(hex_str[i:i+2], 16) for i in (0, 2, 4))
 
@@ -130,29 +112,31 @@ def update_from_hex(event):
         except ValueError:
             pass  # Invalid hex color code
 
-def draw_lines():
-    # Draw the grid lines for X, Y, and Z axes
-    for i in range(8):
-        # X-axis lines (parallel to YZ plane)
-        ax.plot([i, i], [0, 7], [0, 0], color='gray', linestyle='--', linewidth=0.5)
-        ax.plot([i, i], [0, 7], [7, 7], color='gray', linestyle='--', linewidth=0.5)
-        ax.plot([i, i], [0, 0], [0, 7], color='gray', linestyle='--', linewidth=0.5)
-        ax.plot([i, i], [7, 7], [0, 7], color='gray', linestyle='--', linewidth=0.5)
-        
-        # Y-axis lines (parallel to XZ plane)
-        ax.plot([0, 7], [i, i], [0, 0], color='gray', linestyle='--', linewidth=0.5)
-        ax.plot([0, 7], [i, i], [7, 7], color='gray', linestyle='--', linewidth=0.5)
-        ax.plot([0, 0], [i, i], [0, 7], color='gray', linestyle='--', linewidth=0.5)
-        ax.plot([7, 7], [i, i], [0, 7], color='gray', linestyle='--', linewidth=0.5)
-        
-        # Z-axis lines (parallel to XY plane)
-        ax.plot([0, 7], [0, 0], [i, i], color='gray', linestyle='--', linewidth=0.5)
-        ax.plot([0, 7], [7, 7], [i, i], color='gray', linestyle='--', linewidth=0.5)
-        ax.plot([0, 0], [0, 7], [i, i], color='gray', linestyle='--', linewidth=0.5)
-        ax.plot([7, 7], [0, 7], [i, i], color='gray', linestyle='--', linewidth=0.5)
+def add_to_palette(color_code):
+    # 팔레트에 색상 박스를 추가하고 클릭 시 색상으로 설정
+    color_box = Canvas(palette_frame, width=30, height=30, bg=color_code, highlightthickness=1, borderwidth=1, relief='solid')
+    color_box.bind("<Button-1>", lambda e: set_color_from_palette(color_code))
+    color_box.pack(side=LEFT)
+    palette_dict[color_code] = color_box
+
+def set_color_from_palette(color_code):
+    global r_value, g_value, b_value
+    r, g, b = hex_to_rgb(color_code)
+    r_value, g_value, b_value = r // 16, g // 16, b // 16
+    r_slider.set(r_value)
+    g_slider.set(g_value)
+    b_slider.set(b_value)
+
+def draw_grid():
+    grid_canvas.delete("all")
+    cell_width = canvas_width // 8
+    cell_height = canvas_height // 8
+    for i in range(9):
+        grid_canvas.create_line(i * cell_width, 0, i * cell_width, canvas_height, fill='black')
+        grid_canvas.create_line(0, i * cell_height, canvas_width, i * cell_height, fill='black')
 
 # 초기 설정
-fig = plt.figure(figsize=(10, 8))  # 정사각형 모양으로 설정
+fig = plt.figure(figsize=(8, 8))  # 정사각형 모양으로 설정
 ax = fig.add_subplot(111, projection='3d')
 ax.set_xlim(0, 7)
 ax.set_ylim(0, 7)
@@ -185,15 +169,7 @@ grid_frame = Frame(main_frame)
 grid_frame.pack(side='right', padx=10, pady=10)
 
 grid_canvas = Canvas(grid_frame, width=canvas_width, height=canvas_height, bg='white')
-grid_canvas.pack()
-
-def draw_grid():
-    grid_canvas.delete("all")
-    cell_width = canvas_width // 8
-    cell_height = canvas_height // 8
-    for i in range(9):
-        grid_canvas.create_line(i * cell_width, 0, i * cell_width, canvas_height, fill='black')
-        grid_canvas.create_line(0, i * cell_height, canvas_width, i * cell_height, fill='black')
+grid_canvas.pack(side='left')
 
 draw_grid()
 grid_canvas_id = grid_canvas.bind("<Button-1>", on_canvas_click)
@@ -210,8 +186,8 @@ b_slider = Scale(slider_frame, from_=0, to=15, orient=HORIZONTAL, label='Blue', 
 b_slider.pack(side='left')
 
 # Z 슬라이더
-z_slider = Scale(grid_frame, from_=0, to=7, orient='vertical', label='Z', command=update_z)
-z_slider.pack(side='left')
+z_slider = Scale(grid_frame, from_=7, to=0, orient=VERTICAL, label='Z', command=update_z)
+z_slider.pack(side='right')
 
 # 색상 코드 입력
 color_frame = Frame(grid_frame)
@@ -220,6 +196,12 @@ color_frame.pack(side='top', fill='x', pady=5)
 hex_entry = Entry(color_frame)
 hex_entry.pack(side='left')
 hex_entry.bind("<Return>", update_from_hex)
+
+# 팔레트 설정
+palette_frame = Frame(grid_frame)
+palette_frame.pack(side='bottom', fill='x', pady=5)
+
+palette_dict = {}
 
 # 버튼 설정
 button_frame = Frame(grid_frame)
@@ -233,9 +215,6 @@ export_button.pack(side='left')
 
 quit_button = Button(button_frame, text="Quit", command=quit_application)
 quit_button.pack(side='left')
-
-# 그리드 선 그리기
-draw_lines()
 
 # Tkinter 메인 루프 시작
 root.mainloop()
