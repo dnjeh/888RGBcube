@@ -4,6 +4,10 @@ from mpl_toolkits.mplot3d import Axes3D
 from tkinter import Tk, Scale, HORIZONTAL, VERTICAL, Frame, Button, Entry, Canvas, LEFT, RIGHT, Scrollbar, Y, Label
 from tkinter import filedialog  # 파일 대화 상자 추가
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import re
+import time
+import random
+import threading
 
 # 8x8x8 크기의 3차원 배열 생성
 rgb_cube = np.zeros((8, 8, 8, 3), dtype=int)
@@ -70,6 +74,11 @@ def update_plot():
 
     canvas.draw()
     draw_grid()
+
+def LED(x, y, z, red, green, blue):
+    if 0 <= x < 8 and 0 <= y < 8 and 0 <= z < 8:
+        rgb_cube[x, y, z] = [red, green, blue]
+        update_plot()
 
 def draw_grid_lines():
     z = z_value
@@ -185,6 +194,58 @@ def import_from_arduino():
             rgb_cube[:, :, :, 2] = np.array(B)
 
             update_plot()  # 플롯 업데이트
+
+def convert_arduino_function(arduino_code):
+    # Find the function definition
+    conversions = [
+        (r'{', ''),
+        (r'}', ''),
+        (r'  ', '    '),
+        (r'random\((\d+), (\d+)\)', r'random.randint(\1, \2 - 1)'),
+        (r'random\((\d+)\)', r'random.randint(0, \1 - 1)'),
+        (r"\bwhile\s*(.*?)(?=\s*[\n;#])", r"while \1:"),
+        (r'\bmillis\(\)', 'time.time() * 1000'),
+        (r'\bfor\s*\((\w+)\s*=\s*(\d+);\s*\1\s*<\s*(\d+);\s*\1\+\+\)', r'for \1 in range(\2, \3):'),  # for 루프
+        (r'\bfor\s*\((\w+)\s*=\s*(\d+);\s*\1\s*<\s*(\d+);\s*\1\s*\-\-\)', r'for \1 in range(\2, \3, -1):'),
+        (r"\bif\s*\(([^)]+)\)", r"if \1:"),
+        (r'\bvoid (\w+)\(\)', r'def \1():'),
+        (r"^([^()]*?)(\b\w+ = [^,]+)(, )", r"\1; "),
+        (r'\bint \b', ''),  # Remove int declarations
+        (r'//(.*)', r'#\1'),
+        (r'\bdelay\((\d+)\)', r'time.sleep(\1 / 1000)'),
+        (r',\s*$', '', re.MULTILINE),
+    ]
+    python_code = arduino_code
+    for conversion in conversions:
+        if len(conversion) == 2:
+            pattern, replacement = conversion
+            python_code = re.sub(pattern, replacement, python_code)
+        elif len(conversion) == 3:
+            pattern, replacement, flags = conversion
+            python_code = re.sub(pattern, replacement, python_code, flags=flags)
+        
+    return python_code
+
+def load_and_run_arduino_function():
+    file_path = filedialog.askopenfilename(filetypes=[("Arduino Files", "*.ino")])
+    if not file_path:
+        return
+
+    with open(file_path, 'r') as file:
+        arduino_code = file.read()
+
+    python_function = convert_arduino_function(arduino_code)
+
+    if python_function:
+        # Create a new function in Python
+        exec(python_function, globals())
+        #print(python_function)
+
+def exe(event):
+    func_name = export_entry.get()
+    func_to_call = globals()[func_name]
+    thread = threading.Thread(target=func_to_call)
+    thread.start()
 
 def quit_application():
     root.destroy()
@@ -359,13 +420,23 @@ button_frame.pack(side='bottom', fill='x', pady=5)
 button_top_frame = Frame(button_frame, bg='#ffffff')
 button_top_frame.pack(side='top', fill='x', pady=5)
 
-button_bottom_frame = Frame(button_frame, bg='#ffffff')
-button_bottom_frame.pack(side='bottom', fill='x', pady=5)
+button_middle_frame = Frame(button_frame, bg='#ffffff')
+button_middle_frame.pack(side='top', fill='x', pady=5)
 
-export_button = Button(button_top_frame, text="Export to Arduino", command=export_to_arduino, width=18)
+button_bottom_frame = Frame(button_frame, bg='#ffffff')
+button_bottom_frame.pack(side='top', fill='x', pady=5)
+
+export_button = Button(button_top_frame, text="Import func from Arduino", command=load_and_run_arduino_function, width=22)
 export_button.pack(side='left', padx=5)
 
-clear_button = Button(button_top_frame, text="Clear", command=clear_all, width=12)
+export_entry = Entry(button_top_frame, width=8)
+export_entry.pack(side='left', padx=5)
+export_entry.bind("<Return>", exe)
+
+export_button = Button(button_middle_frame, text="Export to Arduino", command=export_to_arduino, width=18)
+export_button.pack(side='left', padx=5)
+
+clear_button = Button(button_middle_frame, text="Clear", command=clear_all, width=12)
 clear_button.pack(side='left', padx=5)
 
 import_button = Button(button_bottom_frame, text="Import from Arduino", command=import_from_arduino, width=18)
