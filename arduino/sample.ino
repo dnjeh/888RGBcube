@@ -101,10 +101,10 @@ void loop() {
 }
 void moveSingle() {
 
-  for (int i = 0; i < 8; i++)
+  for (int i = 2; i < 8; i++)
     for (int j = 0; j < 8; j++)
       for (int k = 0; k < 8; k++) {
-        LED(i, j, k, 3, 3, 3);
+        LED(i, j, k, 3, 0, 3);
 
 
         delay(6);
@@ -192,22 +192,21 @@ void LED(int level, int row, int column, byte red, byte green, byte blue) {
     blue = 0;
   if (blue > 15)
     blue = 15;
-  int whichbyte = int(((level * 64) + (row * 8) + column) / 8);
- int wholebyte = (level * 64) + (row * 8) + column;
-  bitWrite(red0[whichbyte], wholebyte - (8 * whichbyte), bitRead(red, 0));
-  bitWrite(red1[whichbyte], wholebyte - (8 * whichbyte), bitRead(red, 1));
-  bitWrite(red2[whichbyte], wholebyte - (8 * whichbyte), bitRead(red, 2));
-  bitWrite(red3[whichbyte], wholebyte - (8 * whichbyte), bitRead(red, 3));
+  int whichbyte = level * 8 + row;
+  bitWrite(red0[whichbyte], column, bitRead(red, 0));
+  bitWrite(red1[whichbyte], column, bitRead(red, 1));
+  bitWrite(red2[whichbyte], column, bitRead(red, 2));
+  bitWrite(red3[whichbyte], column, bitRead(red, 3));
 
-  bitWrite(green0[whichbyte], wholebyte - (8 * whichbyte), bitRead(green, 0));
-  bitWrite(green1[whichbyte], wholebyte - (8 * whichbyte), bitRead(green, 1));
-  bitWrite(green2[whichbyte], wholebyte - (8 * whichbyte), bitRead(green, 2));
-  bitWrite(green3[whichbyte], wholebyte - (8 * whichbyte), bitRead(green, 3));
+  bitWrite(green0[whichbyte], column, bitRead(green, 0));
+  bitWrite(green1[whichbyte], column, bitRead(green, 1));
+  bitWrite(green2[whichbyte], column, bitRead(green, 2));
+  bitWrite(green3[whichbyte], column, bitRead(green, 3));
 
-  bitWrite(blue0[whichbyte], wholebyte - (8 * whichbyte), bitRead(blue, 0));
-  bitWrite(blue1[whichbyte], wholebyte - (8 * whichbyte), bitRead(blue, 1));
-  bitWrite(blue2[whichbyte], wholebyte - (8 * whichbyte), bitRead(blue, 2));
-  bitWrite(blue3[whichbyte], wholebyte - (8 * whichbyte), bitRead(blue, 3));
+  bitWrite(blue0[whichbyte], column, bitRead(blue, 0));
+  bitWrite(blue1[whichbyte], column, bitRead(blue, 1));
+  bitWrite(blue2[whichbyte], column, bitRead(blue, 2));
+  bitWrite(blue3[whichbyte], column, bitRead(blue, 3));
   //Serial.println(red*10000+green*100+blue);
 }
 
