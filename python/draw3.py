@@ -125,24 +125,18 @@ def clear_all():
     draw_grid()
 
 def format_array(arr):
-    def format_layer(layer):
-        return '{{{}}}'.format(
-            ', '.join(
-                '{{{}}}'.format(
-                    ', '.join(map(str, row))
-                ) for row in layer
-            )
-        )
-
-    def format_array(arr):
-        return '{{{}}}'.format(
-            ', '.join(
-                format_layer(layer)
-                for layer in arr
-            )
-        )
-
-    return format_array(arr)
+    ret = "{"
+    for z in range(0, 8):
+        ret += "{"
+        for y in range(0, 8):
+            ret += "{"
+            for x in range(0, 8):
+                ret += f"{arr[x][y][z]},"
+            ret += "},"
+        ret += "},"
+    ret += "}"
+                
+    return ret
 
 def export_to_arduino():
     # 파일 저장 대화 상자 열기
