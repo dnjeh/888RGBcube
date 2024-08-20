@@ -65,10 +65,11 @@ void loop() {
       color_wheelTWO();
       clean();
       harlem_shake();
+      firework();
       heart();
       moveSingle();
-      allLeds(); 
       flowingRainbowAnimation();
+      allLeds(); 
     }
     else if(t=='r') {
       rainVersionTwo();
@@ -91,8 +92,17 @@ void loop() {
     else if(t=='h') {
     harlem_shake(); 
     }
+    else if(t=='k') {
+      firework();
+    }
+    else if(t=='e') {
+      heart();
+    }
     else if(t=='i') {
       moveSingle();
+    }
+    else if(t=='w') {
+      flowingRainbowAnimation();
     }
     else if(t=='l') {
     allLeds();
@@ -2189,5 +2199,99 @@ void heart() {
       }
       delay(50);
     }
+  }
+}
+
+void firework() {
+  int ind=0, a[2][8]={{0,},}, b[8][8][8][3]={{{{0,},},},};
+  int start = millis();
+  while(millis() - start < 20000) {
+    a[ind%2][0]=random(1, 4); //크기
+    a[ind%2][1]=random(1, 4); //종류
+    a[ind%2][2]=random(8);
+    a[ind%2][3]=random(8);
+    a[ind%2][4]=random(4, 7);
+    a[ind%2][5]=random(16);
+    a[ind%2][6]=random(16);
+    a[ind%2][7]=random(16);
+    for(int i=0;i<3*(a[ind%2][4]+1);i++) {
+      for(int ii=0;ii<8;ii++) {
+        for(int j=0;j<8;j++) {
+          for(int k=0;k<8;k++) {
+            for(int l=0;l<3;l++) {
+              b[ii][j][k][l]=0;
+            }
+          }
+        }
+      }
+      b[i/3][a[ind%2][3]][a[ind%2][2]][0]+=a[ind%2][5];
+      b[i/3][a[ind%2][3]][a[ind%2][2]][1]+=a[ind%2][6];
+      b[i/3][a[ind%2][3]][a[ind%2][2]][2]+=a[ind%2][7];
+      
+      for(int ii=0;ii<i/3;ii++) {
+        b[ii][a[ind%2][3]][a[ind%2][2]][0]+=a[ind%2][5]-i/3+ii;
+        b[ii][a[ind%2][3]][a[ind%2][2]][1]+=a[ind%2][6]-i/3+ii;
+        b[ii][a[ind%2][3]][a[ind%2][2]][2]+=a[ind%2][7]-i/3+ii;
+      }
+
+      b[a[(ind+1)%2][4]][a[(ind+1)%2][3]][a[(ind+1)%2][2]][0]+=a[(ind+1)%2][5]-i;
+      b[a[(ind+1)%2][4]][a[(ind+1)%2][3]][a[(ind+1)%2][2]][1]+=a[(ind+1)%2][6]-i;
+      b[a[(ind+1)%2][4]][a[(ind+1)%2][3]][a[(ind+1)%2][2]][2]+=a[(ind+1)%2][7]-i;
+      if(a[(ind+1)%2][1]&1) {
+        for(int t=a[(ind+1)%2][0]*-1;t<=a[(ind+1)%2][0];t++) {
+          if(!t) continue;
+          if(a[(ind+1)%2][4]+t>=0&&a[(ind+1)%2][4]+t<8) {
+            b[a[(ind+1)%2][4]+t][a[(ind+1)%2][3]][a[(ind+1)%2][2]][0]+=a[(ind+1)%2][5]-i;
+            b[a[(ind+1)%2][4]+t][a[(ind+1)%2][3]][a[(ind+1)%2][2]][1]+=a[(ind+1)%2][6]-i;
+            b[a[(ind+1)%2][4]+t][a[(ind+1)%2][3]][a[(ind+1)%2][2]][2]+=a[(ind+1)%2][7]-i;
+          }
+          if(a[(ind+1)%2][3]+t>=0&&a[(ind+1)%2][3]+t<8) {
+            b[a[(ind+1)%2][4]][a[(ind+1)%2][3]+t][a[(ind+1)%2][2]][0]+=a[(ind+1)%2][5]-i;
+            b[a[(ind+1)%2][4]][a[(ind+1)%2][3]+t][a[(ind+1)%2][2]][1]+=a[(ind+1)%2][6]-i;
+            b[a[(ind+1)%2][4]][a[(ind+1)%2][3]+t][a[(ind+1)%2][2]][2]+=a[(ind+1)%2][7]-i;
+          }
+          if(a[(ind+1)%2][2]+t>=0&&a[(ind+1)%2][2]+t<8) {
+            b[a[(ind+1)%2][4]][a[(ind+1)%2][3]][a[(ind+1)%2][2]+t][0]+=a[(ind+1)%2][5]-i;
+            b[a[(ind+1)%2][4]][a[(ind+1)%2][3]][a[(ind+1)%2][2]+t][1]+=a[(ind+1)%2][6]-i;
+            b[a[(ind+1)%2][4]][a[(ind+1)%2][3]][a[(ind+1)%2][2]+t][2]+=a[(ind+1)%2][7]-i;
+          }
+        }
+      }
+
+      if(a[(ind+1)%2][1]&2) {
+        for(int t=a[(ind+1)%2][0]*-1;t<=a[(ind+1)%2][0];t++) {
+          if(!t) continue;
+          if(a[(ind+1)%2][3]+t>=0&&a[(ind+1)%2][3]+t<8&&a[(ind+1)%2][2]+t>=0&&a[(ind+1)%2][2]+t<8) {
+            b[a[(ind+1)%2][4]][a[(ind+1)%2][3]+t][a[(ind+1)%2][2]+t][0]+=a[(ind+1)%2][5]-i;
+            b[a[(ind+1)%2][4]][a[(ind+1)%2][3]+t][a[(ind+1)%2][2]+t][1]+=a[(ind+1)%2][6]-i;
+            b[a[(ind+1)%2][4]][a[(ind+1)%2][3]+t][a[(ind+1)%2][2]+t][2]+=a[(ind+1)%2][7]-i;
+          }
+          if(a[(ind+1)%2][3]-t>=0&&a[(ind+1)%2][3]-t<8&&a[(ind+1)%2][2]+t>=0&&a[(ind+1)%2][2]+t<8) {
+            b[a[(ind+1)%2][4]][a[(ind+1)%2][3]-t][a[(ind+1)%2][2]+t][0]+=a[(ind+1)%2][5]-i;
+            b[a[(ind+1)%2][4]][a[(ind+1)%2][3]-t][a[(ind+1)%2][2]+t][1]+=a[(ind+1)%2][6]-i;
+            b[a[(ind+1)%2][4]][a[(ind+1)%2][3]-t][a[(ind+1)%2][2]+t][2]+=a[(ind+1)%2][7]-i;
+          }
+          if(a[(ind+1)%2][3]+t>=0&&a[(ind+1)%2][3]+t<8&&a[(ind+1)%2][2]-t>=0&&a[(ind+1)%2][2]-t<8) {
+            b[a[(ind+1)%2][4]][a[(ind+1)%2][3]+t][a[(ind+1)%2][2]-t][0]+=a[(ind+1)%2][5]-i;
+            b[a[(ind+1)%2][4]][a[(ind+1)%2][3]+t][a[(ind+1)%2][2]-t][1]+=a[(ind+1)%2][6]-i;
+            b[a[(ind+1)%2][4]][a[(ind+1)%2][3]+t][a[(ind+1)%2][2]-t][2]+=a[(ind+1)%2][7]-i;
+          }
+          if(a[(ind+1)%2][3]-t>=0&&a[(ind+1)%2][3]-t<8&&a[(ind+1)%2][2]-t>=0&&a[(ind+1)%2][2]-t<8) {
+            b[a[(ind+1)%2][4]][a[(ind+1)%2][3]-t][a[(ind+1)%2][2]-t][0]+=a[(ind+1)%2][5]-i;
+            b[a[(ind+1)%2][4]][a[(ind+1)%2][3]-t][a[(ind+1)%2][2]-t][1]+=a[(ind+1)%2][6]-i;
+            b[a[(ind+1)%2][4]][a[(ind+1)%2][3]-t][a[(ind+1)%2][2]-t][2]+=a[(ind+1)%2][7]-i;
+          }
+        }
+      }
+      
+      for(int ii=0;ii<8;ii++) {
+        for(int j=0;j<8;j++) {
+          for(int k=0;k<8;k++) {
+            LED(ii, j, k, b[ii][j][k][0], b[ii][j][k][1], b[ii][j][k][2]);
+          }
+        }
+      }
+      delay(10);
+    } 
   }
 }
