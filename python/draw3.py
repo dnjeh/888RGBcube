@@ -53,44 +53,60 @@ def on_canvas_right_click(event):
                 add_to_palette(color_code)
 
 def update_plot():
-    ax.cla()  # Clear the 3D plot
-    ax.set_xlim(0, 7)
-    ax.set_ylim(0, 7)
-    ax.set_zlim(0, 7)
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
+    # 축과 레이블 설정은 초기화 없이 유지됩니다.
+    if not hasattr(ax, 'initialized'):
+        ax.set_xlim(0, 7)
+        ax.set_ylim(0, 7)
+        ax.set_zlim(0, 7)
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.set_zlabel('Z')
+        ax.points = []  # 점 객체를 저장할 리스트 초기화
+        ax.initialized = True  # 초기화 여부 플래그
 
-    # 3D 플롯에 점 추가
+    # 점 업데이트
     for x in range(8):
         for y in range(8):
             for z in range(8):
-                color = rgb_cube[x, y, z]  # 색상은 정규화된 RGB 값으로 설정
-                if np.any(color):  # 색상이 설정된 점만 추가
-                    ax.plot(x, y, z, c=f'#{color[0]*16:02X}{color[1]*16:02X}{color[2]*16:02X}', markersize=10, marker='o')  # 색상 업데이트
+                color = rgb_cube[x, y, z]
+                hex_color = f'#{int(color[0]*16):02X}{int(color[1]*16):02X}{int(color[2]*16):02X}'
+                if np.any(color):
 
-    # 현재 Z 층에 가상의 X, Y 선 추가 (격자 무늬)
-    draw_grid_lines()
-
+                    if (x, y, z) not in ax.points:
+                        point = ax.plot(x, y, z, c=hex_color, markersize=10, marker='o')[0]
+                        ax.points.append((x, y, z))
+                        ax.points.append(point)
+                    else:
+                        # 이미 존재하는 점의 색상 업데이트
+                        idx = ax.points.index((x, y, z))
+                        ax.points[idx+1].set_color(hex_color)
+                        ax.points[idx+1].set_visible(True)
+                else:
+                    if (x, y, z) in ax.points:
+                        idx = ax.points.index((x, y, z))
+                        ax.points[idx+1].set_visible(False)
     canvas.draw()
     draw_grid()
 
 def LED(x, y, z, red, green, blue):
     if 0 <= x < 8 and 0 <= y < 8 and 0 <= z < 8:
         rgb_cube[x, y, z] = [red, green, blue]
-        update_plot()
-
-def draw_grid_lines():
-    z = z_value
-    step = 1  # 격자의 간격
-
-    # X 방향 선
-    for y in range(0, 8, step):
-        ax.plot([0, 7], [y, y], zs=z, color='black', linestyle='--', linewidth=2)
-
-    # Y 방향 선
-    for x in range(0, 8, step):
-        ax.plot([x, x], [0, 7], zs=z, color='black', linestyle='--', linewidth=2)
+        hex_color = f'#{int(red*16):02X}{int(green*16):02X}{int(blue*16):02X}'
+        if red != 0 or green != 0 or blue != 0:
+            if (x, y, z) not in ax.points:
+                point = ax.plot(x, y, z, c=hex_color, markersize=10, marker='o')[0]
+                ax.points.append((x, y, z))
+                ax.points.append(point)
+            else:
+                # 이미 존재하는 점의 색상 업데이트
+                idx = ax.points.index((x, y, z))
+                ax.points[idx+1].set_color(hex_color)
+                ax.points[idx+1].set_visible(True)
+        else:
+            if (x, y, z) in ax.points:
+                idx = ax.points.index((x, y, z))
+                ax.points[idx+1].set_visible(False)
+        canvas.draw()
 
 def update_r(val):
     global r_value
@@ -189,46 +205,13 @@ def import_from_arduino():
 
             update_plot()  # 플롯 업데이트
 
-def convert_arduino_function(arduino_code):
-    # Find the function definition
-    conversions = [
-        (r'{', ''),
-        (r'}', ''),
-        (r'  ', '    '),
-        (r'random\((\d+), (\d+)\)', r'random.randint(\1, \2 - 1)'),
-        (r'random\((\d+)\)', r'random.randint(0, \1 - 1)'),
-        (r"\bwhile\s*(.*?)(?=\s*[\n;#])", r"while \1:"),
-        (r'\bmillis\(\)', 'time.time() * 1000'),
-        (r'\bfor\s*\((\w+)\s*=\s*(\d+);\s*\1\s*<\s*(\d+);\s*\1\+\+\)', r'for \1 in range(\2, \3):'),  # for 루프
-        (r'\bfor\s*\((\w+)\s*=\s*(\d+);\s*\1\s*<\s*(\d+);\s*\1\s*\-\-\)', r'for \1 in range(\2, \3, -1):'),
-        (r"\bif\s*\(([^)]+)\)", r"if \1:"),
-        (r'\bvoid (\w+)\(\)', r'def \1():'),
-        (r"^([^()]*?)(\b\w+ = [^,]+)(, )", r"\1; "),
-        (r'\bint \b', ''),  # Remove int declarations
-        (r'//(.*)', r'#\1'),
-        (r'\bdelay\((\d+)\)', r'time.sleep(\1 / 1000)'),
-        (r',\s*$', '', re.MULTILINE),
-    ]
-    python_code = arduino_code
-    for conversion in conversions:
-        if len(conversion) == 2:
-            pattern, replacement = conversion
-            python_code = re.sub(pattern, replacement, python_code)
-        elif len(conversion) == 3:
-            pattern, replacement, flags = conversion
-            python_code = re.sub(pattern, replacement, python_code, flags=flags)
-        
-    return python_code
-
 def load_and_run_arduino_function():
-    file_path = filedialog.askopenfilename(filetypes=[("Arduino Files", "*.ino")])
+    file_path = filedialog.askopenfilename(filetypes=[("Python Files", "*.py")])
     if not file_path:
         return
 
-    with open(file_path, 'r') as file:
-        arduino_code = file.read()
-
-    python_function = convert_arduino_function(arduino_code)
+    with open(file_path, 'r', encoding="utf-8") as file:
+        python_function = file.read()
 
     if python_function:
         # Create a new function in Python
@@ -420,7 +403,7 @@ button_middle_frame.pack(side='top', fill='x', pady=5)
 button_bottom_frame = Frame(button_frame, bg='#ffffff')
 button_bottom_frame.pack(side='top', fill='x', pady=5)
 
-export_button = Button(button_top_frame, text="Import func from Arduino", command=load_and_run_arduino_function, width=22)
+export_button = Button(button_top_frame, text="Import func from Python", command=load_and_run_arduino_function, width=22)
 export_button.pack(side='left', padx=5)
 
 export_entry = Entry(button_top_frame, width=8)

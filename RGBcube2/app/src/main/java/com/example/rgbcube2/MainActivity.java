@@ -57,11 +57,14 @@ public class MainActivity extends AppCompatActivity {
             {"rain", "r", Integer.toString(R.drawable.rain)},
             {"folder", "f", Integer.toString(R.drawable.folder)},
             {"sinwave", "s", Integer.toString(R.drawable.sinwave)},
-            {"wipe out", "o", Integer.toString(R.drawable.wipe2)},
+            {"cubic", "o", Integer.toString(R.drawable.wipe2)},
             {"bouncy", "b", Integer.toString(R.drawable.bouncy)},
             {"wheel", "w", Integer.toString(R.drawable.wheel)},
             {"rgb rainbow", "h", Integer.toString(R.drawable.harlem)},
+            {"firework", "k", Integer.toString(R.drawable.fill)},
+            {"heart", "e", Integer.toString(R.drawable.fill)},
             {"fill", "i", Integer.toString(R.drawable.fill)},
+            {"flow", "w", Integer.toString(R.drawable.fill)},
             {"all leds", "l", Integer.toString(R.drawable.allled)} };
     int[][] a = {{0, 0, 0, 0, 1, 1, 0, 0}, {0, 1, 0, 0, 1, 0, 1, 0}, {0, 0, 1, 0, 1, 0, 1, 0}, {0, 0, 0, 1, 1, 1, 0, 0}, {0, 0, 0, 1, 1, 1, 0, 0}, {0, 0, 1, 0, 1, 0, 1, 0}, {0, 1, 0, 0, 1, 0, 1, 0}, {0, 0, 0, 0, 1, 1, 0, 0}};
 
@@ -246,7 +249,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 arrow.setVisibility(View.VISIBLE);
-                RGBtext.setText("광자 방출 2극 정류관 입방체 연결됨");
+                RGBtext.setText("RGB 큐브 연결됨");
                 mainLayout.setBackgroundColor(Color.rgb(0x17, 0x17, 0x1B));
 
                 Animation ani;
