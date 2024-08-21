@@ -54,18 +54,18 @@ public class MainActivity extends AppCompatActivity {
     private int readBufferPosition; //버퍼  내 문자 저장 위치
     String[] array = {"0"}; //수신된 문자열을 쪼개서 저장할 배열
     String[][] included = {{"all", "a", Integer.toString(R.drawable.all)},
-            {"rain", "r", Integer.toString(R.drawable.rain)},
-            {"folder", "f", Integer.toString(R.drawable.folder)},
-            {"sinwave", "s", Integer.toString(R.drawable.sinwave)},
-            {"cubic", "o", Integer.toString(R.drawable.wipe2)},
-            {"bouncy", "b", Integer.toString(R.drawable.bouncy)},
-            {"wheel", "w", Integer.toString(R.drawable.wheel)},
-            {"rgb rainbow", "h", Integer.toString(R.drawable.harlem)},
-            {"firework", "k", Integer.toString(R.drawable.fill)},
-            {"heart", "e", Integer.toString(R.drawable.fill)},
-            {"fill", "i", Integer.toString(R.drawable.fill)},
-            {"flow", "w", Integer.toString(R.drawable.fill)},
-            {"all leds", "l", Integer.toString(R.drawable.allled)} };
+            {"heart", "e", Integer.toString(R.drawable.heart)},
+            {"rain", "r", Integer.toString(R.drawable.newrain)},
+            {"folder", "f", Integer.toString(R.drawable.newfolder)},
+            {"sinwave", "s", Integer.toString(R.drawable.newsinwave)},
+            {"cubic", "o", Integer.toString(R.drawable.cubic)},
+            {"bouncy", "b", Integer.toString(R.drawable.newbouncy)},
+            {"wheel", "w", Integer.toString(R.drawable.newwheel)},
+            {"firework", "k", Integer.toString(R.drawable.firework)},
+            {"rgb rainbow", "h", Integer.toString(R.drawable.rgbrainbow)},
+            {"fill", "i", Integer.toString(R.drawable.newfill)},
+            {"flow", "w", Integer.toString(R.drawable.flow)},
+            {"all leds", "l", Integer.toString(R.drawable.newallled)} };
     int[][] a = {{0, 0, 0, 0, 1, 1, 0, 0}, {0, 1, 0, 0, 1, 0, 1, 0}, {0, 0, 1, 0, 1, 0, 1, 0}, {0, 0, 0, 1, 1, 1, 0, 0}, {0, 0, 0, 1, 1, 1, 0, 0}, {0, 0, 1, 0, 1, 0, 1, 0}, {0, 1, 0, 0, 1, 0, 1, 0}, {0, 0, 0, 0, 1, 1, 0, 0}};
 
     GridLayout gridLayout;
