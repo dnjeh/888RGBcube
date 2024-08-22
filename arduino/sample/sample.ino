@@ -47,6 +47,9 @@ void setup() {
   Serial.begin(9600);
   Serial1.begin(9600);
   interrupts();
+  
+  
+  all();
 }
 
 
@@ -56,21 +59,7 @@ void loop() {
     char t = Serial1.read();
     clean();
     if(t=='a') {
-      heart();
-      rainVersionTwo();
-      folder();
-      sinwaveTwo();
-      wipe_out();
-      clean();
-      bouncyvTwo();
-      color_wheelTWO();
-      clean();
-      firework();
-      clean();
-      harlem_shake();
-      moveSingle();
-      flowingRainbowAnimation();
-      allLeds(); 
+      all();
     }
     else if(t=='r') {
       rainVersionTwo();
@@ -111,16 +100,30 @@ void loop() {
     clean();
   }
 }
+void all() {
+  heart();
+  rainVersionTwo();
+  folder();
+  sinwaveTwo();
+  wipe_out();
+  clean();
+  bouncyvTwo();
+  color_wheelTWO();
+  clean();
+  firework();
+  clean();
+  harlem_shake();
+  moveSingle();
+  flowingRainbowAnimation();
+  allLeds(); 
+}
 void moveSingle() {
 
   for (int i = 0; i < 8; i++)
     for (int j = 0; j < 8; j++)
       for (int k = 0; k < 8; k++) {
         LED(i, j, k, 15, 0, 0);
-
-
         delay(6);
-
       }
 }
 void allLeds() {
@@ -2192,9 +2195,11 @@ void heart() {
       for (int l = 0; l < 8; l++) {
         for (int r = 0; r < 8; r++) {
           for (int c = 0; c < 8; c++) {
-            if(i==5) LED(l, r, c, R[c][r][l]*2/5, G[c][r][l]*2/5, B[c][r][l]*2/5);
-            else if(i==6) LED(l, r, c, R[c][r][l]/10, G[c][r][l]/10, B[c][r][l]/10);
-            else LED(l, r, c, R[c][r][l]/5, G[c][r][l]/5, B[c][r][l]/5);
+            if(R[c][r][l]||G[c][r][l]||B[c][r][l]) {
+              if(i==5) LED(l, r, c, R[c][r][l]*2/5, G[c][r][l]*2/5, B[c][r][l]*2/5);
+              else if(i==6) LED(l, r, c, R[c][r][l]/10, G[c][r][l]/10, B[c][r][l]/10);
+              else LED(l, r, c, R[c][r][l]/5, G[c][r][l]/5, B[c][r][l]/5);
+            }
           }
         }
       }
@@ -2268,4 +2273,3 @@ void firework() {
     ind++;
   }
 }
-
