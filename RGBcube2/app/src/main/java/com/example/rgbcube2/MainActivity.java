@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
             {"firework", "k", Integer.toString(R.drawable.firework)},
             {"rgb rainbow", "h", Integer.toString(R.drawable.rgbrainbow)},
             {"fill", "i", Integer.toString(R.drawable.newfill)},
-            {"flow", "w", Integer.toString(R.drawable.flow)},
+            {"flow", "n", Integer.toString(R.drawable.flow)},
             {"all leds", "l", Integer.toString(R.drawable.newallled)} };
     int[][] a = {{0, 0, 0, 0, 1, 1, 0, 0}, {0, 1, 0, 0, 1, 0, 1, 0}, {0, 0, 1, 0, 1, 0, 1, 0}, {0, 0, 0, 1, 1, 1, 0, 0}, {0, 0, 0, 1, 1, 1, 0, 0}, {0, 0, 1, 0, 1, 0, 1, 0}, {0, 1, 0, 0, 1, 0, 1, 0}, {0, 0, 0, 0, 1, 1, 0, 0}};
 
