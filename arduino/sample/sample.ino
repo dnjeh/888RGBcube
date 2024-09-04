@@ -11,10 +11,12 @@ byte red0[64], red1[64], red2[64], red3[64];
 byte blue0[64], blue1[64], blue2[64], blue3[64];
 byte green0[64], green1[64], green2[64], green3[64];
 
+volatile int flag = 0;
 int level = 0;
 int anodelevel = 0;
 int BAM_Bit, BAM_Counter = 0;
 unsigned long start;
+volatile void(* resetFunc) (void) = 0;
 void setup() {
   SPI.setBitOrder(MSBFIRST);
   SPI.setDataMode(SPI_MODE0);
@@ -48,10 +50,13 @@ void setup() {
   Serial1.begin(9600);
   interrupts();
   
-  
-  all();
+  attachInterrupt(digitalPinToInterrupt(19), res, CHANGE);
+  //all();
 }
 
+void res() {
+  if(flag) resetFunc();
+}
 
 void loop() {
   clean();
@@ -59,43 +64,69 @@ void loop() {
     char t = Serial1.read();
     clean();
     if(t=='a') {
+      flag=1;
       all();
+      flag=0;
     }
     else if(t=='r') {
+      flag=1;
       rainVersionTwo();
+      flag=0;
     }
     else if(t=='f') {
+      flag=1;
     folder();
+    flag=0;
     }
     else if(t=='s') {
+      flag=1;
     sinwaveTwo();
+    flag=0;
     }
     else if(t=='o') {
+      flag=1;
       wipe_out();
+      flag=0;
     }
     else if(t=='b') {
+      flag=1;
     bouncyvTwo();
+    flag=0;
     }
     else if(t=='w') {
+      flag=1;
     color_wheelTWO();
+    flag=0;
     }
     else if(t=='h') {
+      flag=1;
     harlem_shake(); 
+    flag=0;
     }
     else if(t=='k') {
+      flag=1;
       firework();
+      flag=0;
     }
     else if(t=='e') {
+      flag=1;
       heart();
+      flag=0;
     }
     else if(t=='i') {
+      flag=1;
       moveSingle();
+      flag=0;
     }
     else if(t=='n') {
+      flag=1;
       flowingRainbowAnimation();
+      flag=0;
     }
     else if(t=='l') {
+      flag=1;
     allLeds();
+    flag=0;
     }
     clean();
   }
@@ -2051,12 +2082,20 @@ void harlem_shake() {
 }
 
 void clean() {
-  int ii, jj, kk;
-  for (ii = 0; ii < 8; ii++)
-    for (jj = 0; jj < 8; jj++)
-      for (kk = 0; kk < 8; kk++)
-        LED(ii, jj, kk, 0, 0, 0);
-
+  for(int i=0;i<64;i++) {
+    red0[i]=
+    red1[i]=
+    red2[i]=
+    red3[i]= 
+    green0[i]=
+    green1[i]=
+    green2[i]=
+    green3[i]=
+    blue0[i]=
+    blue1[i]=
+    blue2[i]=
+    blue3[i]=0;
+  }
 }
 
 //------------------------------------------
@@ -2220,33 +2259,27 @@ void firework() {
     a[ind%3][5]=random(16);
     a[ind%3][6]=random(16);
     a[ind%3][7]=random(16);
-    for(int i=0;i<8;i++) {
-      for(int j=0;j<8;j++) {
-        for(int k=0;k<8;k++) {
-          LED(i, j, k, 0, 0, 0);
-        }
-      }
-    }
-    for(int i=0;i<2*(a[ind%3][4]+1);i++) {
+    clean();
+    for(int i=0;i<(a[ind%3][4]+1);i++) {
 
-      LED(i/3, a[ind%3][3], a[ind%3][2], a[ind%3][5], a[ind%3][6], a[ind%3][7]);
+      LED(i, a[ind%3][3], a[ind%3][2], a[ind%3][5], a[ind%3][6], a[ind%3][7]);
       
       for(int ii=0;ii<i/2;ii++) {
-        LED(ii, a[ind%3][3], a[ind%3][2], a[ind%3][5]-i/3+ii, a[ind%3][6]-i/3+ii, a[ind%3][7]-i/3+ii);
+        LED(ii, a[ind%3][3], a[ind%3][2], a[ind%3][5]-i+ii, a[ind%3][6]-i+ii, a[ind%3][7]-i+ii);
       }
 
-      LED(a[(ind+1)%3][4], a[(ind+1)%3][3], a[(ind+1)%3][2], a[(ind+1)%3][5]-i-a[(ind+2)%3][4]*2+3, a[(ind+1)%3][6]-i-a[(ind+2)%3][4]*2+3, a[(ind+1)%3][7]-i-a[(ind+2)%3][4]*2+3);
+      LED(a[(ind+1)%3][4], a[(ind+1)%3][3], a[(ind+1)%3][2], a[(ind+1)%3][5]-i-a[(ind+2)%3][4]+3, a[(ind+1)%3][6]-i-a[(ind+2)%3][4]+3, a[(ind+1)%3][7]-i-a[(ind+2)%3][4]+3);
       if(a[(ind+1)%3][1]&1) {
         for(int t=a[(ind+1)%3][0]*-1;t<=a[(ind+1)%3][0];t++) {
           if(!t) continue;
           if(a[(ind+1)%3][4]+t>=0&&a[(ind+1)%3][4]+t<8) {
-            LED(a[(ind+1)%3][4]+t, a[(ind+1)%3][3], a[(ind+1)%3][2], a[(ind+1)%3][5]-i-a[(ind+2)%3][4]*2+3, a[(ind+1)%3][6]-i-a[(ind+2)%3][4]*2+3, a[(ind+1)%3][7]-i-a[(ind+2)%3][4]*2+3);
+            LED(a[(ind+1)%3][4]+t, a[(ind+1)%3][3], a[(ind+1)%3][2], a[(ind+1)%3][5]-i-a[(ind+2)%3][4]+3, a[(ind+1)%3][6]-i-a[(ind+2)%3][4]+3, a[(ind+1)%3][7]-i-a[(ind+2)%3][4]+3);
           }
           if(a[(ind+1)%3][3]+t>=0&&a[(ind+1)%3][3]+t<8) {
-            LED(a[(ind+1)%3][4], a[(ind+1)%3][3]+t, a[(ind+1)%3][2], a[(ind+1)%3][5]-i-a[(ind+2)%3][4]*2+3, a[(ind+1)%3][6]-i-a[(ind+2)%3][4]*2+3, a[(ind+1)%3][7]-i-a[(ind+2)%3][4]*2+3);
+            LED(a[(ind+1)%3][4], a[(ind+1)%3][3]+t, a[(ind+1)%3][2], a[(ind+1)%3][5]-i-a[(ind+2)%3][4]+3, a[(ind+1)%3][6]-i-a[(ind+2)%3][4]+3, a[(ind+1)%3][7]-i-a[(ind+2)%3][4]+3);
           }
           if(a[(ind+1)%3][2]+t>=0&&a[(ind+1)%3][2]+t<8) {
-            LED(a[(ind+1)%3][4], a[(ind+1)%3][3], a[(ind+1)%3][2]+t, a[(ind+1)%3][5]-i-a[(ind+2)%3][4]*2+3, a[(ind+1)%3][6]-i-a[(ind+2)%3][4]*2+3, a[(ind+1)%3][7]-i-a[(ind+2)%3][4]*2+3);
+            LED(a[(ind+1)%3][4], a[(ind+1)%3][3], a[(ind+1)%3][2]+t, a[(ind+1)%3][5]-i-a[(ind+2)%3][4]+3, a[(ind+1)%3][6]-i-a[(ind+2)%3][4]+3, a[(ind+1)%3][7]-i-a[(ind+2)%3][4]+3);
           }
         }
       }
@@ -2255,16 +2288,16 @@ void firework() {
         for(int t=a[(ind+1)%3][0]*-1;t<=a[(ind+1)%3][0];t++) {
           if(!t) continue;
           if(a[(ind+1)%3][3]+t>=0&&a[(ind+1)%3][3]+t<8&&a[(ind+1)%3][2]+t>=0&&a[(ind+1)%3][2]+t<8) {
-            LED(a[(ind+1)%3][4]-t, a[(ind+1)%3][3]+t, a[(ind+1)%3][2]+t, a[(ind+1)%3][5]-i-a[(ind+2)%3][4]*2+3, a[(ind+1)%3][6]-i-a[(ind+2)%3][4]*2+3, a[(ind+1)%3][7]-i-a[(ind+2)%3][4]*2+3);
+            LED(a[(ind+1)%3][4]-t, a[(ind+1)%3][3]+t, a[(ind+1)%3][2]+t, a[(ind+1)%3][5]-i-a[(ind+2)%3][4]+3, a[(ind+1)%3][6]-i-a[(ind+2)%3][4]+3, a[(ind+1)%3][7]-i-a[(ind+2)%3][4]+3);
           }
           if(a[(ind+1)%3][3]-t>=0&&a[(ind+1)%3][3]-t<8&&a[(ind+1)%3][2]+t>=0&&a[(ind+1)%3][2]+t<8) {
-            LED(a[(ind+1)%3][4]-t, a[(ind+1)%3][3]-t, a[(ind+1)%3][2]+t, a[(ind+1)%3][5]-i-a[(ind+2)%3][4]*2+3, a[(ind+1)%3][6]-i-a[(ind+2)%3][4]*2+3, a[(ind+1)%3][7]-i-a[(ind+2)%3][4]*2+3);
+            LED(a[(ind+1)%3][4]-t, a[(ind+1)%3][3]-t, a[(ind+1)%3][2]+t, a[(ind+1)%3][5]-i-a[(ind+2)%3][4]+3, a[(ind+1)%3][6]-i-a[(ind+2)%3][4]+3, a[(ind+1)%3][7]-i-a[(ind+2)%3][4]+3);
           }
           if(a[(ind+1)%3][3]+t>=0&&a[(ind+1)%3][3]+t<8&&a[(ind+1)%3][2]-t>=0&&a[(ind+1)%3][2]-t<8) {
-            LED(a[(ind+1)%3][4]-t, a[(ind+1)%3][3]+t, a[(ind+1)%3][2]-t, a[(ind+1)%3][5]-i-a[(ind+2)%3][4]*2+3, a[(ind+1)%3][6]-i-a[(ind+2)%3][4]*2+3, a[(ind+1)%3][7]-i-a[(ind+2)%3][4]*2+3);
+            LED(a[(ind+1)%3][4]-t, a[(ind+1)%3][3]+t, a[(ind+1)%3][2]-t, a[(ind+1)%3][5]-i-a[(ind+2)%3][4]+3, a[(ind+1)%3][6]-i-a[(ind+2)%3][4]+3, a[(ind+1)%3][7]-i-a[(ind+2)%3][4]+3);
           }
           if(a[(ind+1)%3][3]-t>=0&&a[(ind+1)%3][3]-t<8&&a[(ind+1)%3][2]-t>=0&&a[(ind+1)%3][2]-t<8) {
-            LED(a[(ind+1)%3][4]-t, a[(ind+1)%3][3]-t, a[(ind+1)%3][2]-t, a[(ind+1)%3][5]-i-a[(ind+2)%3][4]*2+3, a[(ind+1)%3][6]-i-a[(ind+2)%3][4]*2+3, a[(ind+1)%3][7]-i-a[(ind+2)%3][4]*2+3);
+            LED(a[(ind+1)%3][4]-t, a[(ind+1)%3][3]-t, a[(ind+1)%3][2]-t, a[(ind+1)%3][5]-i-a[(ind+2)%3][4]+3, a[(ind+1)%3][6]-i-a[(ind+2)%3][4]+3, a[(ind+1)%3][7]-i-a[(ind+2)%3][4]+3);
           }
         }
       }
@@ -2302,7 +2335,7 @@ void firework() {
           }
         }
       }
-      delay(35);
+      delay(50);
     } 
     ind++;
   }
